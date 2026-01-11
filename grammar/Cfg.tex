@@ -1,0 +1,28 @@
+%! Author = fredmike
+%! Date = 1/11/26
+
+% Preamble
+\documentclass[11pt]{}
+
+% Packages
+\usepackage{amsmath}
+
+% Document
+\begin{document}
+
+    \paragraph{la grammaire obtenu depuis le Backus Naur Form(Bnf) du corpus d'essai}
+
+    \begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Non-Terminal} & \textbf{NB (1000)} & \textbf{PLUS (+)} & \textbf{FIN (\$)} \\ \hline
+\textless E \textgreater & \textless E \textgreater $\rightarrow$ \textless T \textgreater \textless E' \textgreater & & \\ \hline
+\textless E' \textgreater & & \textless E' \textgreater $\rightarrow$ PLUS \textless T \textgreater \textless E' \textgreater & \textless E' \textgreater $\rightarrow$ $\epsilon$ \\ \hline
+\textless T \textgreater & \textless T \textgreater $\rightarrow$ NB & & \\ \hline
+\end{tabular}
+\caption{Table d'Analyse LL(1)}
+\end{table}
+
+
+\end{document}

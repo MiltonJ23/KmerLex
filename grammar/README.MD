@@ -31,7 +31,7 @@ There are several ways to represent the grammar of a language, but one of the mo
 In our case, we will be using the Backus Naur Form (BNF) to represent the grammar of our language. But first of all, a little terminology of the BNF notation :
 - Terminals are simply written out as they are. For example, the terminal symbol for the keyword `if` is simply written as `if`.
 - Non-terminals are usually enclosed in angle brackets `< >` or sometimes written in italics or bold. For example, the non-terminal symbol for an expression could be written as `<expression>`.
-- The Production rules are represented using the `::-` symbol. The left side of the `::=` is the non-terminal being defined, and the right side is the sequence of terminal and/or non-terminal symbols that make up the definition. For example, a production rule for an expression could be written as `<sentence> ::= <noun-phrase> <verb-phrase>`. So more generally speaking, we have : `<non-terminal> ::= <sequence of terminal and/or non-terminals >`.
+- The Production rules are represented using the `::=` symbol. The left side of the `::=` is the non-terminal being defined, and the right side is the sequence of terminal and/or non-terminal symbols that make up the definition. For example, a production rule for an expression could be written as `<sentence> ::= <noun-phrase> <verb-phrase>`. So more generally speaking, we have : `<non-terminal> ::= <sequence of terminal and/or non-terminals >`.
 We can use the pipe symbol `|` to denote alternatives in the production rules. For example, a production rule for a noun phrase could be written as `<noun-phrase> ::= <determiner> <noun> | <adjective> <noun>`.
 
 
@@ -41,18 +41,18 @@ An example of a simple grammar that defines integer and floating-point numbers c
 ```bnf
 <digit> ::= 0 |1 | 2 | 3 |4 | 5 | 6 | 7| 8| 9
 <integer> ::= <digit> | <digit> <integer> 
-<floating point> ::= <integer> . <integer> 
+<floating point> ::= <integer> '.' <integer> 
 ```
 
 A more complex example could be a c-based programming language grammar :
 
 ```bnf
 <statement> ::= <if-statement> | <while-statement> | <assignment> | <block> 
-<assignment> ::= <variable> = <expression> 
+<assignment> ::= <variable> '=' <expression> 
 <if-statement> ::= if(<condition>) <statement> | if (<condition>) <statement> else <statement> 
 <block> ::= { <statement-sequence>} 
 <while-statement> ::= while(<condition>) <statement> 
-<statement-sequence> :: <statement> | <statement> <statement-sequence>
+<statement-sequence> ::= <statement> | <statement> <statement-sequence>
 ```
 
 

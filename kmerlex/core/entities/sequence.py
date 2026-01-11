@@ -68,3 +68,4 @@ class DNASequence:
     
     def __str__(self):
         return f"DNA[{self.sample_id}] from {self.location}: {self.length}bp, GC: {self.gc_content}%"
+    

@@ -28,6 +28,8 @@ je wanda sur toi hein, skalom pour accacia, 200 comment ? asser hein repe, easy
 
 Let's classify our token according to their language fragment : 
 
-- `Pronom`: `il` ,`je` ,`lui`,`me`,`on`, `moi`,`tu`,`toi`
-- `Auxilliaire` : `a`,`as`,`va`
-- `Nom`: `dos`,`fap`,`prix`,`mater`,`kolo`,`courant`,`taximan`, `
+- **Pronom**: `il` ,`je` ,`lui`,`me`,`on`, `moi`,`tu`,`toi`
+- **Auxilliaire** : `a`,`as`,`va`
+- **Nom**: `dos`,`fap`,`prix`,`mater`,`kolo`,`courant`,`taximan`, `mater`,`route`,`francais`,`boue`,`day`,`notes`,`gars`,`dovv`,`messamedongo`,`places`,`santa lucia`,`mboutman`,`feraille`,`chien`,`salopard`,`chouagne`,`gouvernement`,`groupes`,`wiseman`,`skalom`,`accacia`
+- **Verbe** : `tchop`,`pris`,`wanda`,`gi`,`payer`,`est`,`wait`,`laisse`,`ai`,`makam`,`djoum`,`etre`,`play`,`criche`,`quitte`,`ont`,`talk`
+- 

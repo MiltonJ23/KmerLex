@@ -1,31 +1,23 @@
 """
-DNA Sequence class for your genomics research
+DNA Sequence entity for genomics research
 """
 
 class DNASequence:
-    """Represents a DNA sequence from your Yaoundé research samples"""
+    """DNA sequence from research samples"""
     
-    def __init__(self, sample_id: str, sequence: str, location: str = "Yaoundé"):
+    def __init__(self, sample_id: str, sequence: str, location: str = "Yaoundé", metadata=None):
         """
         Initialize a DNA sequence
         Args:
-            sample_id: Unique identifier like "YAOUNDE_001"
+            sample_id: Unique identifier (e.g., "YAOUNDE_001")
             sequence: DNA bases (A, C, G, T)
-            location: Where it was collected
+            location: Collection location
+            metadata: Additional information
         """
         self.sample_id = sample_id
         self.sequence = sequence.upper().strip()
         self.location = location
-        
-        # Validate
-        self._validate_sequence()
-    
-    def _validate_sequence(self):
-        """Check if it's valid DNA"""
-        valid_bases = {'A', 'C', 'G', 'T', 'N'}
-        for base in self.sequence:
-            if base not in valid_bases:
-                raise ValueError(f"Invalid DNA base '{base}' in sample {self.sample_id}")
+        self.metadata = metadata or {}
     
     @property
     def length(self):
@@ -52,11 +44,11 @@ class DNASequence:
         
         kmers = []
         for i in range(self.length - k + 1):
-            kmer = self.sequence[i:i + k]
+            kmer_seq = self.sequence[i:i + k]
             kmers.append({
-                'start': i,
-                'kmer': kmer,
-                'gc': self._kmer_gc_content(kmer)
+                'position': i,
+                'sequence': kmer_seq,
+                'gc_content': self._kmer_gc_content(kmer_seq)
             })
         return kmers
     
@@ -68,4 +60,3 @@ class DNASequence:
     
     def __str__(self):
         return f"DNA[{self.sample_id}] from {self.location}: {self.length}bp, GC: {self.gc_content}%"
-    

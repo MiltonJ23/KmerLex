@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kmerlex - Yaoundé Genomics Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #e74c3c;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .tagline {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .result-card.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-section {
+            margin-bottom: 25px;
+        }
+        
+        .result-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .result-value {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .kmers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .kmer-box {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 8px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .api-info {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .api-info h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .endpoint {
+            background: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 3px solid #764ba2;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧬 Kmerlex Genomics Platform</h1>
+            <div class="subtitle">University of Yaoundé, Cameroon</div>
+            <div class="tagline">DNA sequence analysis for African genomics research</div>
+        </header>
+        
+        <div class="main-content">
+            <div class="card">
+                <h2>DNA Sequence Analysis</h2>
+                
+                <div class="form-group">
+                    <label for="sampleId">Sample ID</label>
+                    <input type="text" id="sampleId" value="YAOUNDE_MALARIA_001" placeholder="Enter sample identifier">
+                </div>
+                
+                <div class="form-group">
+                    <label for="location">Collection Location</label>
+                    <input type="text" id="location" value="Yaoundé Central Hospital" placeholder="Where was the sample collected?">
+                </div>
+                
+                <div class="form-group">
+                    <label for="sequence">DNA Sequence</label>
+                    <textarea id="sequence" placeholder="Enter DNA sequence (A, C, G, T only)">ATCGATCGATCGATCGATCGATCG</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="kValue">k-mer Size</label>
+                    <select id="kValue">
+                        <option value="3">3-mers</option>
+                        <option value="4" selected>4-mers</option>
+                        <option value="5">5-mers</option>
+                        <option value="6">6-mers</option>
+                    </select>
+                </div>
+                
+                <button class="btn" onclick="analyzeDNA()">Analyze DNA Sequence</button>
+                
+                <div class="info-box">
+                    <strong>💡 Tip:</strong> Use valid DNA bases (A, C, G, T). Sequences are automatically converted to uppercase.
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>About Kmerlex</h2>
+                <p>Kmerlex is a genomic k-mer analysis platform developed at the University of Yaoundé for African genomics research.</p>
+                
+                <div class="info-box">
+                    <strong>🔬 Research Focus:</strong>
+                    <ul style="margin-top: 10px; padding-left: 20px;">
+                        <li>Malaria genomics (Plasmodium falciparum)</li>
+                        <li>HIV genetic diversity</li>
+                        <li>African population genetics</li>
+                        <li>Infectious disease surveillance</li>
+                    </ul>
+                </div>
+                
+                <div class="api-info">
+                    <h3>API Endpoints</h3>
+                    <div class="endpoint">
+                        <strong>GET /api/health</strong><br>
+                        System health check
+                    </div>
+                    <div class="endpoint">
+                        <strong>POST /api/analyze</strong><br>
+                        Analyze DNA sequence (JSON)
+                    </div>
+                    <div class="endpoint">
+                        <strong>GET /api/example</strong><br>
+                        Example malaria sequence analysis
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="resultCard" class="result-card">
+            <h2>Analysis Results</h2>
+            
+            <div class="result-section">
+                <h3>Sample Information</h3>
+                <div class="result-item">
+                    <span class="result-label">Sample ID:</span>
+                    <span class="result-value" id="resultSampleId">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Location:</span>
+                    <span class="result-value" id="resultLocation">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Analysis ID:</span>
+                    <span class="result-value" id="resultAnalysisId">-</span>
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h3>Sequence Analysis</h3>
+                <div class="result-item">
+                    <span class="result-label">Sequence Length:</span>
+                    <span class="result-value" id="resultLength">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">GC Content:</span>
+                    <span class="result-value" id="resultGC">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Base Composition:</span>
+                    <span class="result-value" id="resultBases">-</span>
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h3>k-mer Analysis</h3>
+                <div class="result-item">
+                    <span class="result-label">k-mer Size:</span>
+                    <span class="result-value" id="resultKSize">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Total k-mers:</span>
+                    <span class="result-value" id="resultTotalKmers">-</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Example k-mers:</span>
+                    <span class="result-value" id="resultExampleKmers">-</span>
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h3>First 10 k-mers</h3>
+                <div id="kmersContainer" class="kmers-grid">
+                    <!-- k-mers will be inserted here -->
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Kmerlex Genomics Platform v0.1.0 • University of Yaoundé • © 2024</p>
+            <p>Contact: research.bioinformatics@univ-yaounde.cm</p>
+        </footer>
+    </div>
+    
+    <script>
+        function analyzeDNA() {
+            const sampleId = document.getElementById('sampleId').value;
+            const location = document.getElementById('location').value;
+            const sequence = document.getElementById('sequence').value.toUpperCase();
+            const kValue = parseInt(document.getElementById('kValue').value);
+            
+            // Show loading
+            const resultCard = document.getElementById('resultCard');
+            resultCard.classList.add('show');
+            resultCard.innerHTML = '<h2>Analyzing...</h2><p>Please wait while we analyze your DNA sequence.</p>';
+            
+            const data = {
+                sample_id: sampleId,
+                sequence: sequence,
+                location: location,
+                k_value: kValue,
+                metadata: {
+                    analysis_type: "web_interface",
+                    timestamp: new Date().toISOString(),
+                    platform: "Kmerlex Web"
+                }
+            };
+            
+            fetch('/api/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayResults(data, kValue);
+            })
+            .catch(error => {
+                resultCard.innerHTML = `
+                    <h2>Analysis Error</h2>
+                    <p style="color: #e74c3c;">Error: ${error.message}</p>
+                    <p>Please check your DNA sequence and try again.</p>
+                `;
+            });
+        }
+        
+        function displayResults(data, kValue) {
+            // Update result card content
+            const resultCard = document.getElementById('resultCard');
+            resultCard.innerHTML = `
+                <h2>Analysis Results</h2>
+                
+                <div class="result-section">
+                    <h3>Sample Information</h3>
+                    <div class="result-item">
+                        <span class="result-label">Sample ID:</span>
+                        <span class="result-value">${data.sample_info.sample_id}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Location:</span>
+                        <span class="result-value">${data.sample_info.location}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Analysis ID:</span>
+                        <span class="result-value">${data.analysis_id}</span>
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>Sequence Analysis</h3>
+                    <div class="result-item">
+                        <span class="result-label">Sequence Length:</span>
+                        <span class="result-value">${data.sequence_analysis.length} base pairs</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">GC Content:</span>
+                        <span class="result-value">${data.sequence_analysis.gc_content}%</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Base Composition:</span>
+                        <span class="result-value">
+                            A: ${data.sequence_analysis.base_composition.A}, 
+                            T: ${data.sequence_analysis.base_composition.T}, 
+                            C: ${data.sequence_analysis.base_composition.C}, 
+                            G: ${data.sequence_analysis.base_composition.G}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>k-mer Analysis</h3>
+                    <div class="result-item">
+                        <span class="result-label">k-mer Size:</span>
+                        <span class="result-value">${kValue}-mers</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Total k-mers:</span>
+                        <span class="result-value">${data.kmer_analysis.total_4_mers}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Example k-mers:</span>
+                        <span class="result-value">${data.kmer_analysis.example_4_mers.slice(0, 5).join(', ')}</span>
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>First 10 k-mers</h3>
+                    <div id="kmersContainer" class="kmers-grid"></div>
+                </div>
+                
+                <div class="result-section">
+                    <h3>Status</h3>
+                    <div class="result-item">
+                        <span class="result-label">Analysis:</span>
+                        <span class="result-value" style="color: #27ae60; font-weight: bold;">${data.status}</span>
+                    </div>
+                </div>
+            `;
+            
+            // Add k-mer boxes
+            const kmersContainer = document.getElementById('kmersContainer');
+            data.kmer_analysis.example_4_mers.slice(0, 10).forEach(kmer => {
+                const kmerBox = document.createElement('div');
+                kmerBox.className = 'kmer-box';
+                kmerBox.textContent = kmer;
+                kmersContainer.appendChild(kmerBox);
+            });
+            
+            resultCard.classList.add('show');
+        }
+        
+        // Example DNA sequences for quick testing
+        const exampleSequences = {
+            'malaria': 'ATCGATCGATCGATCGATCGATCG',
+            'hiv': 'GCTAGCTAGCTAGCTA',
+            'human': 'ACGTACGTACGTACGTACGT'
+        };
+        
+        function loadExample(type) {
+            document.getElementById('sequence').value = exampleSequences[type];
+            document.getElementById('sampleId').value = `YAOUNDE_${type.toUpperCase()}_001`;
+        }
+    </script>
+</body>
+</html>

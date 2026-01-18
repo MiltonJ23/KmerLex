@@ -1,0 +1,63 @@
+<Programme> ::= <Phrase> <ListePhrases>
+
+<ListePhrases> ::= <Phrase> <ListePhrases> | EPSILON
+
+/* 2. Structure d'une Phrase */
+/* Gère : "Mboutman, quitte..." (Interjection au début) ou "Il a tchop..." (Direct) */
+<Phrase> ::= <TK_INTERJECTION> <SuitePhraseAvecInterjection> | <Proposition> <FinDePhrase>
+
+/* Si on a "Massa", on regarde après : est-ce une virgule puis une suite ? ou rien ? */
+<SuitePhraseAvecInterjection> ::= <TK_VIRGULE> <Proposition> <FinDePhrase>
+                                | <FinDePhrase>
+
+/* Comment se termine une phrase ? Par un "?" ou une interjection finale ("hein") ou rien */
+<FinDePhrase>           ::= <TK_POINT_INTERRO> | <TK_INTERJECTION> | EPSILON
+
+/* 3. La Proposition (Le Cœur Logique) */
+/* FACTORISATION : On distingue l'Ordre (Impératif) de la Déclaration (Sujet) */
+/* FIRST(Imperatif) = TK_VERBE | TK_AUXILIAIRE */
+/* FIRST(Declarative) = TK_PRONOM_SUJET | TK_DETERMINANT | TK_NOM */
+<Proposition> ::= <Imperatif> | <Declarative>
+
+/* "Quitte avec ta feraille" / "Faut science" */
+<Imperatif> ::= <TK_VERBE> <Complement> | <TK_AUXILIAIRE> <TK_VERBE> <Complement>
+
+/* "Je wanda" / "La route ci c'est le fey" / "On va wait combien ?" */
+<Declarative> ::= <Sujet> <SuiteDeclarative>
+
+/* Après le sujet, soit "c'est", soit un verbe */
+<SuiteDeclarative> ::= <TK_CEST> <Complement>
+                          | <GroupeVerbal> <Complement> <OptionInterrogative>
+
+/* Gère la fin de phrase interrogative : "200 comment ?" / "wait ... combien ?" */
+<OptionInterrogative>   ::= <TK_INTERROGATIF> | EPSILON
+
+/* 4. Le Groupe Verbal (Complexité : Négation et Pronoms Objets) */
+/* Structure récursive à droite pour empiler les éléments */
+/* Ex: "ne...pas", "lui a gi" */
+<GroupeVerbal> ::= <TK_NEGATION> <GroupeVerbal> | <TK_PRONOM_OBJET> <GroupeVerbal> | <TK_AUXILIAIRE> <TK_VERBE> | <TK_VERBE>
+
+/* 5. Le Groupe Nominal et Compléments (Nettoyage Mathématique) */
+/* Règle originale récursive gauche (INTERDITE) : GN -> GN Prep GN */
+/* Règle transformée (VALIDE) : GN -> Base Suite */
+
+<Sujet> ::= <GroupeNominal>
+
+/* Le Complément peut être un GN, ou commencer direct par une préposition ("avec ta feraille") */
+<Complement>            ::= <TK_PREPOSITION> <GroupeNominal>
+                          | <GroupeNominal>
+                          | EPSILON
+
+<GroupeNominal> ::= <BaseNominale> <SuiteNominale>
+
+/* Gestion de "Les gars du gouvernement" : SuiteNominale boucle sur les prépositions */
+<SuiteNominale> ::= <TK_PREPOSITION> <GroupeNominal> | EPSILON
+
+/* Le cœur du nom : "La route ci", "Les dos", "1000 plus 200" */
+<BaseNominale>  ::= <TK_DETERMINANT> <TK_NOM> <OptionDemonstratif> | <TK_NOM> <OptionDemonstratif> | <TK_PRONOM_SUJET> | <TK_NOMBRE> <OptionArithmetique>
+
+<OptionDemonstratif>  ::= <TK_DEMONSTRATIF> /* "ci" ou "la" après le nom */
+                          | EPSILON
+
+<OptionArithmetique> ::= <TK_OPERATEUR> <TK_NOMBRE> /* "plus 200" */
+                          | EPSILON

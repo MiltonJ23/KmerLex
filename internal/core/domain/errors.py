@@ -11,7 +11,9 @@ class KmerLexError(Exception): # this is the base error object, that others erro
     message: str
     line: int
     column: int
-    sourceLine: Optional[str] = None
+    sourceLine: Optional[int]
+    found_token: Optional[Token]
+    expected_token: Optional[List[TokenType]]
 
     def __str__(self)-> str:
         """ returns the plain error message"""
@@ -39,8 +41,6 @@ class LexicalError(KmerLexError):
 
 class SyntaxError(KmerLexError):
     """ This error is raised when the parser doesn't recognize a production rule"""
-    found_token: Optional[Token] = None
-    expected_token: Optional[List[TokenType]] = None
 
     def __post_init__(self)->None:
         if not self.message and self.found_token:

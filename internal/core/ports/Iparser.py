@@ -11,5 +11,5 @@ from internal.core.domain.tokens import Token
 class Iparser(ABC):
     """ This is the contract of the parser interface """
     @abstractmethod
-    def parser(self, source: List[Token])-> Program:
+    def parse(self, source: List[Token])-> Program:
         pass

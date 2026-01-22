@@ -16,6 +16,13 @@ class CamfranglaisParser(Iparser):
         self._tokens: List[Token]= []
         self._current_index: int = 0 # the terminal currently being pointed
 
+    def parse(self, source: List[Token]) -> Program:
+        """Implémentation du contrat Iparser"""
+        self._tokens = source
+        self._current_index = 0
+        # On lance la machine interne
+        return self._parse_program()
+
     @property
     def current(self) -> Token :
         """ return the current pointed terminal """
@@ -40,57 +47,92 @@ class CamfranglaisParser(Iparser):
         """ Check if the current token is one of the allowed tokens types"""
         return self.current.type in types
 
-    def _parse_verb_group(self)-> VerbGroup:
-        """ The method parse the verb group and return it given its rules.
-        <GroupeVerbal> ::= <TK_NEGATION> <GroupeVerbal> | <TK_PRONOM_OBJET> <GroupeVerbal> | <TK_AUXILIAIRE> <TK_VERBE> | <TK_VERBE>
-        """
+    def _parse_verb_group(self) -> VerbGroup:
+        # ... (gestion negation / pronom / aux) ...
         negation = None
         pronom_objet = None
-        auxiliaire = None
-        verbe = None
+        auxiliary = None
 
         if self.match(TokenType.TK_NEGATION):
             negation = self.consume(TokenType.TK_NEGATION)
+
         if self.match(TokenType.TK_PRONOM_OBJET):
             pronom_objet = self.consume(TokenType.TK_PRONOM_OBJET)
+
         if self.match(TokenType.TK_AUXILIAIRE):
-            auxiliaire = self.consume(TokenType.TK_AUXILIAIRE)
-        if self.match(TokenType.TK_VERBE):
-            verbe = self.consume(TokenType.TK_VERBE)
+            auxiliary = self.consume(TokenType.TK_AUXILIAIRE)
 
-        return VerbGroup(negation, pronom_objet, auxiliaire, verbe)
+        # === LE CORRECTIF EST ICI ===
+        # On force la capture du verbe
+        verb = self.consume(TokenType.TK_VERBE)
 
-    def _parse_nominal_group(self)-> NominalGroup:
-        """ The method parse the nominal group and return it given its rules """
+        return VerbGroup(
+            verb=verb,  # <-- On passe la variable ici
+            auxiliary=auxiliary,
+            negation=negation,
+            pronom_objet=pronom_objet
+        )
+
+    def _parse_nominal_group(self) -> NominalGroup:
+        """
+        Gère <GroupeNominal>.
+        Corrige la gestion des démonstratifs et l'ordre des arguments.
+        """
         determinant = None
-        pronom = None
         nom = None
-        demonstratif = None
+        pronom_sujet = None
         nombre = None
         arithmetic = None
-        modifier = None # in the case of a recursivity, let's say "du gouvernement "
+        demonstratif = None
         preposition = None
+        modifier = None
+
+        # 1. Base du Groupe Nominal
         if self.match(TokenType.TK_DETERMINANT):
             determinant = self.consume(TokenType.TK_DETERMINANT)
             nom = self.consume(TokenType.TK_NOM)
         elif self.match(TokenType.TK_NOM):
             nom = self.consume(TokenType.TK_NOM)
         elif self.match(TokenType.TK_PRONOM_SUJET):
-            pronom = self.consume(TokenType.TK_PRONOM_SUJET)
+            pronom_sujet = self.consume(TokenType.TK_PRONOM_SUJET)
         elif self.match(TokenType.TK_NOMBRE):
             nombre = self.consume(TokenType.TK_NOMBRE)
+            # Gestion arithmétique (ex: "1000 plus 200")
             if self.match(TokenType.TK_OPERATEUR):
-                operateur = self.consume(TokenType.TK_OPERATEUR)
-                following_operand = self.consume(TokenType.TK_NOMBRE)
-                arithmetic =  ArithmeticExpr(operateur, following_operand)
+                op = self.consume(TokenType.TK_OPERATEUR)
+                right_operand = self.consume(TokenType.TK_NOMBRE)
+                # Attention : ArithmeticExpr doit aussi être importé ou géré
+                arithmetic = ArithmeticExpr(operator=op, operand=right_operand)
         else:
-            raise SyntaxError(message="", line=self.current.line, column=self.current.column,found_token=self.current,expected_token=[TokenType.TK_PRONOM_SUJET, TokenType.TK_NOMBRE, TokenType.TK_NOM,TokenType.TK_DETERMINANT])
+             raise SyntaxError(
+                 message="Attendu: Nom, Pronom, Déterminant ou Nombre",
+                 line=self.current.line, column=self.current.column,
+                 sourceLine=str(self.current.line), found_token=self.current,
+                 expected_token=[TokenType.TK_NOM, TokenType.TK_PRONOM_SUJET]
+             )
 
+        # 2. Gestion du Démonstratif (C'était manquant !)
+        # Ex: "La route CI"
+        if self.match(TokenType.TK_DEMONSTRATIF):
+            demonstratif = self.consume(TokenType.TK_DEMONSTRATIF)
+
+        # 3. Gestion de la Récursion (Préposition + Suite)
+        # Ex: "... DU gouvernement"
         if self.match(TokenType.TK_PREPOSITION):
             preposition = self.consume(TokenType.TK_PREPOSITION)
-            # since "du gouvernement" can lead to another nominal group , we are going to do a recursive call here
-            modifier = self._parse_nominal_group()
-        return NominalGroup(determinant, nom, pronom, arithmetic, modifier, preposition)
+            modifier = self._parse_nominal_group() # Récursion
+
+        # 4. RETOUR AVEC ARGUMENTS NOMMÉS (CRUCIAL)
+        return NominalGroup(
+            determinant=determinant,
+            nom=nom,
+            pronom_sujet=pronom_sujet,
+            nombre=nombre,
+            arithmetic=arithmetic,     # Maintenant il va dans la bonne case
+            demonstratif=demonstratif, # Maintenant il est rempli
+            preposition=preposition,
+            modifier=modifier          # Maintenant il reçoit le groupe récursif
+        )
 
 
 
@@ -101,30 +143,40 @@ class CamfranglaisParser(Iparser):
         verb_group = self._parse_verb_group()
         complement = self._parse_complement()
 
-    def _parse_declarative(self)-> Optional[Declarative]:
-        """ parse the Declarative tokens from the given rule.
-        <Declarative> ::= <Sujet> <SuiteDeclarative>
-            <SuiteDeclarative> ::= <TK_CEST> <Complement>| <GroupeVerbal> <Complement> <OptionInterrogative>
-            """
+        return Imperative(verb_group, complement)
 
-        sujet= self._parse_nominal_group()
-        has_cest: Token
+    def _parse_declarative(self) -> Optional[Declarative]:
+        # 1. Le Sujet
+        sujet = self._parse_nominal_group()
+
+        # 2. Initialisation des variables (C'était l'erreur UnboundLocalError)
+        has_cest = None
         verb_group = None
 
+        # 3. Choix : "C'est" ou Verbe
         if self.match(TokenType.TK_CEST):
-            has_cest=  self.consume(TokenType.TK_CEST)
-
+            has_cest = self.consume(TokenType.TK_CEST)
         else:
+            # Si ce n'est pas "c'est", ça DOIT être un groupe verbal
+            # Assurez-vous que _parse_verb_group lève une erreur s'il ne trouve rien
             verb_group = self._parse_verb_group()
 
+        # 4. Le reste
         complement = self._parse_complement()
 
-        interrogative = None
+        expr_interrogative = None
         if self.match(TokenType.TK_INTERROGATIF):
-            interrogative = self.consume(TokenType.TK_INTERROGATIF)
-        return Declarative(sujet,has_cest,verb_group,complement,interrogative)
+            expr_interrogative = self.consume(TokenType.TK_INTERROGATIF)
 
-    def _parse_proposition(self) -> Optional[Proposition,Imperative,Declarative]:
+        return Declarative(
+            sujet=sujet,
+            has_cest=has_cest,
+            groupe_verb=verb_group,
+            complement=complement,
+            expr_interrogative=expr_interrogative
+        )
+
+    def _parse_proposition(self) -> Optional[Proposition]:
         """ Parse the proposition from the current token and return it as a Proposition. Check and choose between <Imperative> and <Declarative>"""
         if self.match(TokenType.TK_VERBE, TokenType.TK_AUXILIAIRE): # we obtain this by following the First Principle
             return self._parse_imperative()
@@ -157,15 +209,32 @@ class CamfranglaisParser(Iparser):
         elif self.match(TokenType.TK_POINT_INTERRO):
             end_point_interro = self.consume(TokenType.TK_POINT_INTERRO)
 
-        return Sentence(proposition,start_interjection,end_interjection,end_point_interro)
+        return Sentence(
+            start_interjection=start_interjection,
+            proposition=proposition,
+            end_interjection=end_interjection,
+            end_punctuation=end_point_interro
+        )
 
+    def _parse_complement(self) -> Optional[NominalGroup]:
+        """ Gère le complément, qu'il commence par une préposition ou non """
 
-    def _parse_complement(self)-> Optional[NominalGroup]:
-        """ the method parse the complement of the current token given its rules """
-        if self.match(TokenType.EPSILON,TokenType.TK_INTERROGATIF,TokenType.TK_POINT_INTERRO,TokenType.TK_INTERJECTION):
-            return None # it means we are at the end of the sentence
-        elif self.match(TokenType.TK_PRONOM_SUJET,TokenType.TK_NOM,TokenType.TK_NOMBRE,TokenType.TK_PREPOSITION,TokenType.TK_DETERMINANT):
+        # Cas 1 : Fin de phrase (Epsilon)
+        if self.match(TokenType.EPSILON, TokenType.TK_INTERROGATIF, TokenType.TK_POINT_INTERRO,
+                      TokenType.TK_INTERJECTION):
+            return None
+
+        # Cas 2 : Préposition ("avec ta feraille")
+        if self.match(TokenType.TK_PREPOSITION):
+            # ON CONSOMME LA PRÉPOSITION ICI !
+            self.consume(TokenType.TK_PREPOSITION)
+            # Ensuite on parse le GN qui suit ("ta feraille")
             return self._parse_nominal_group()
+
+        # Cas 3 : GN Direct ("le fey")
+        elif self.match(TokenType.TK_PRONOM_SUJET, TokenType.TK_NOM, TokenType.TK_NOMBRE, TokenType.TK_DETERMINANT):
+            return self._parse_nominal_group()
+
         return None
 
     def _parse_program(self) -> Program:

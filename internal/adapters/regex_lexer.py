@@ -27,9 +27,11 @@ class CamfranglaisLexer(Ilexer):
              TokenType.TK_VERBE),
 
             # Pronoms & Déterminants
+
             (r'\b(je|tu|il|on|ils|elle)\b', TokenType.TK_PRONOM_SUJET),
-            (r'\b(me|moi|toi|lui|nous|les)\b', TokenType.TK_PRONOM_OBJET),
             (r'\b(le|la|les|un|une|ta|nos|mon)\b', TokenType.TK_DETERMINANT),
+            (r'\b(me|moi|toi|lui|nous|les)\b', TokenType.TK_PRONOM_OBJET),
+
             (r'\b(ci|la)\b', TokenType.TK_DEMONSTRATIF),  # "ci" dans "la route ci"
 
             # Prépositions
@@ -43,7 +45,7 @@ class CamfranglaisLexer(Ilexer):
              TokenType.TK_INTERJECTION),
 
             # 5. Noms (Génériques ou liste fermée selon votre choix)
-            (r'\b(dos|fap|mater|kolo|courant|route|fey|taximan|boue|day|notes|feraille|chien|wiseman|gouvernement|place|santa lucia)\b',
+            (r'\b(dos|fap|mater|kolo|courant|route|fey|taximan|boue|day|notes|feraille|chien|wiseman|gouvernement|place|santa lucia|gars)\b',
              TokenType.TK_NOM),
 
             # 6. Nombres

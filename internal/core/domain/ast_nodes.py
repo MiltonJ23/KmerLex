@@ -1,7 +1,7 @@
 """the module that contains the language fragment for the Camfranglais and the Pidgin languages """
 
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import Optional, List
 from .tokens import Token
 
 
@@ -65,9 +65,9 @@ class Complement(ASTNode):
 
 
 @dataclass
-class Imperative(ASTNode):
+class Imperative(Proposition):
     """ represent the <Imperatif> non-terminal in code. It is the one for _phrase imperative_ """
-    verb: Optional[Token] = None
+    verb: Optional[VerbGroup] = None
     auxiliary: Optional[Token] = None
     complement: Optional[Token] = None
 
@@ -78,7 +78,7 @@ class Sujet(ASTNode):
     groupe_nominal: Optional[Token] = None
 
 @dataclass
-class Declarative(ASTNode):
+class Declarative(Proposition):
     """ represent the <Declarative> non-terminal in code. It is the one for _phrase declarative_ """
     sujet: Optional[NominalGroup] = None
     has_cest: Optional[Token] = None

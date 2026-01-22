@@ -18,7 +18,7 @@ class SyntaxAnalyzer:
     def analyze(self, source: str)-> Program:
         """ the method is the one that is going to perform the analysis of the source string. It will separate the two tasks on respective threads for concurrency."""
         tokens = self._lexer.tokenize(source)
-        ast = self._parser.parser(tokens)
+        ast = self._parser.parse(tokens)
         return ast
 
     def analyze_async(self, source:str)-> Program:

@@ -80,7 +80,7 @@ class Sujet(ASTNode):
 @dataclass
 class Declarative(ASTNode):
     """ represent the <Declarative> non-terminal in code. It is the one for _phrase declarative_ """
-    sujet: Optional[Token] = None
+    sujet: Optional[NominalGroup] = None
     has_cest: Optional[Token] = None
     groupe_verb: Optional[Token] = None
     complement: Optional[Token] = None

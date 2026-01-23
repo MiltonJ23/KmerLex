@@ -37,7 +37,7 @@ const CONTRIBUTORS: Contributor[] = [
     name: "Kemadjou Djakou Yves",
     role: "Backend & Systems",
     avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Yves&backgroundColor=ffdfbf",
-    github: "https://github.com/yvesfranklin123",
+    github: "https://github.com/hadi-bot-byte",
     stack: ["Logic", "Integration", "API"]
   }
 ];

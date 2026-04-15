@@ -8,6 +8,7 @@ import os
 
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
+from werkzeug.utils import safe_join
 
 from web.backend.routes import api
 
@@ -35,8 +36,8 @@ def create_app():
         """Serve the React SPA for non-API routes."""
         dist = app.static_folder
         if dist and path:
-            full = os.path.join(dist, path)
-            if os.path.isfile(full):
+            safe_path = safe_join(dist, path)
+            if safe_path and os.path.isfile(safe_path):
                 return send_from_directory(dist, path)
         if dist and os.path.isfile(os.path.join(dist, "index.html")):
             return send_from_directory(dist, "index.html")
